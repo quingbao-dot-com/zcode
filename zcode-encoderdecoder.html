@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Zcode Encoder/Decoder</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    label {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    textarea {
+      width: 400px;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #3e8e41;
+    }
+
+    .error-message {
+      color: red;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .how-to-use {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+      width: 80%;
+    }
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 0.8em;
+      color: #777;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>Zcode Encoder/Decoder</h1>
+    <div class="how-to-use">
+      <p><strong>How to use:</strong></p>
+      <p>1. Enter your message in the "Message" text area.</p>
+      <p>2. Click "Encode" to convert the message to Zcode.</p>
+      <p>3. The Zcode will appear in the "Zcode" text area.</p>
+      <p>4. To decode, enter Zcode in the "Zcode" text area.</p>
+      <p>5. Click "Decode" to convert the Zcode back to a message.</p>
+    </div>
+
+  <label for="message">Message:</label><br>
+  <textarea id="message" rows="4" cols="50"></textarea><br><br>
+
+  <button onclick="encode()">Encode</button>
+  <button onclick="decode()">Decode</button>
+  <button onclick="reset()">Reset</button><br><br>
+
+  <label for="zcode">Zcode:</label><br>
+  <textarea id="zcode" rows="4" cols="50"></textarea>
+
+  <div id="error" class="error-message"></div>
+
+  <script>
+    function encode() {
+      document.getElementById("error").textContent = "";
+      let message = document.getElementById("message").value;
+      if (!message) {
+        document.getElementById("error").textContent = "Error: Please enter a message to encode.";
+        return;
+      }
+      let zcode = "z";
+      for (let i = 0; i < message.length; i++) {
+        let charCode = message.charCodeAt(i);
+        let binaryChar = charCode.toString(2).padStart(8, '0');
+        let customChar = binaryChar.replace(/0/g, "\\").replace(/1/g, "|");
+        zcode += customChar;
+      }
+      document.getElementById("zcode").value = zcode;
+    }
+
+    function decode() {
+      document.getElementById("error").textContent = "";
+      let zcode = document.getElementById("zcode").value;
+      if (!zcode) {
+        document.getElementById("error").textContent = "Error: Please enter Zcode to decode.";
+        return;
+      }
+
+      if (!zcode.startsWith("z")) {
+        document.getElementById("error").textContent = "Error: Invalid Zcode format. Must start with 'z'.";
+        return;
+      }
+
+      zcode = zcode.substring(1);
+
+      if (zcode.length % 8 !== 0) {
+        document.getElementById("error").textContent = "Error: Invalid Zcode length. It must be a multiple of 8 (8 bits per character) after removing prefix.";
+        return;
+      }
+
+      if (!/^[\\|]+$/.test(zcode)) {
+        document.getElementById("error").textContent = "Error: Invalid characters in Zcode. Only '\\' and '|' are allowed.";
+        return;
+      }
+
+      let binary = zcode.replace(/\\/g, "0").replace(/\|/g, "1");
+
+      let message = "";
+      for (let i = 0; i < binary.length; i += 8) {
+        let binaryChar = binary.substring(i, i + 8);
+        let charCode = parseInt(binaryChar, 2);
+        if (isNaN(charCode)) {
+          document.getElementById("error").textContent = "Error: Invalid binary sequence encountered during decoding.";
+          return;
+        }
+        message += String.fromCharCode(charCode);
+      }
+      document.getElementById("message").value = message;
+    }
+    function reset(){
+      document.getElementById("message").value = "";
+      document.getElementById("zcode").value = "";
+      document.getElementById("error").textContent = "";
+    }
+  </script>
+  <div class="footer">
+    <p>2025 Rivdt Experiments. "Zcode" can be used for anything without permission from us. Zcode is not for cybercriminals, or any other illegal activities. Zcode is meant to be a secure, educational way to store unicode symbols. Last updated in March 2025.</p>
+  </div>
+</body>
+</html>
